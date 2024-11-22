@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Youtube Video Downloader Installer
+# Youtube Video Downloader Installer with Virtual Environment
 
 # Check for Python installation
 if ! command -v python3 &>/dev/null; then
@@ -8,19 +8,25 @@ if ! command -v python3 &>/dev/null; then
     exit 1
 fi
 
-# Check for pip installation
-if ! command -v pip3 &>/dev/null; then
-    echo "pip3 is not installed. Installing pip3..."
-    sudo apt update && sudo apt install -y python3-pip || {
-        echo "Failed to install pip3. Exiting."
+# Create a virtual environment
+ENV_DIR="yt_downloader_env"
+if [ ! -d "$ENV_DIR" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv $ENV_DIR || {
+        echo "Failed to create virtual environment. Exiting."
         exit 1
     }
 fi
 
-# Install pytube
-echo "Installing required libraries..."
-pip3 install --upgrade pytube || {
+# Activate the virtual environment
+source $ENV_DIR/bin/activate
+
+# Install pytube in the virtual environment
+echo "Installing required libraries in the virtual environment..."
+pip install --upgrade pip
+pip install pytube || {
     echo "Failed to install pytube. Exiting."
+    deactivate
     exit 1
 }
 
@@ -57,7 +63,10 @@ if __name__ == "__main__":
         print("Invalid URL. Exiting.")
 EOF
 
+# Deactivate the virtual environment
+deactivate
+
 # Make the Python script executable
 chmod +x $DOWNLOADER_SCRIPT
 
-echo "Setup complete. Run the downloader with: python3 $DOWNLOADER_SCRIPT"
+echo "Setup complete. Run the downloader with: source $ENV_DIR/bin/activate && python $DOWNLOADER_SCRIPT"
